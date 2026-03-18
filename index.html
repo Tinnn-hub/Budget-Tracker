@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Budget Tracker</title>
+<link rel="manifest" href="manifest.json">
+<style>
+    body { font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; }
+    h1 { text-align: center; }
+    input, select, button { padding: 8px; margin: 5px 0; width: 100%; box-sizing: border-box; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background-color: #f4f4f4; }
+    .income { color: green; }
+    .expense { color: red; }
+</style>
+</head>
+<body>
+
+<h1>Budget Tracker</h1>
+
+<label for="type">Type:</label>
+<select id="type">
+    <option value="income">Income</option>
+    <option value="expense">Expense</option>
+</select>
+
+<label for="amount">Amount ($):</label>
+<input type="number" id="amount" placeholder="Enter amount" step="0.01">
+
+<label for="description">Description:</label>
+<input type="text" id="description" placeholder="Enter description">
+
+<button onclick="addTransaction()">Add Transaction</button>
+
+<h2>Current Balance: $<span id="balance">0.00</span></h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>Type</th>
+            <th>Amount</th>
+            <th>Description</th>
+        </tr>
+    </thead>
+    <tbody id="transactionTable">
+    </tbody>
+</table>
+
+<script>
+let balance = 0;
+let transactions = [];
+
+// Load data from localStorage
+window.onload = () => {
+    const savedData = JSON.parse(localStorage.getItem('budgetData'));
+    if (savedData) {
+        transactions = savedData.transactions;
+        balance = savedData.balance;
+        updateDisplay();
+    }
+};
+
+function addTransaction() {
+    const type = document.getElementById('type').value;
+    const amount = parseFloat(document.getElementById('amount').value);
+    const description = document.getElementById('description').value;
+
+    if (isNaN(amount) || amount <= 0 || description === "") {
+        alert("Please enter a valid amount and description.");
+        return;
+    }
+
+    const transaction = { type, amount, description };
+    transactions.push(transaction);
+
+    if (type === 'income') {
+        balance += amount;
+    } else {
+        balance -= amount;
+    }
+
+    saveData();
+    updateDisplay();
+    clearInputs();
+}
+
+function updateDisplay() {
+    document.getElementById('balance').textContent = balance.toFixed(2);
+
+    const table = document.getElementById('transactionTable');
+    table.innerHTML = '';
+    transactions.forEach(t => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td class="${t.type}">${t.type.charAt(0).toUpperCase() + t.type.slice(1)}</td>
+            <td class="${t.type}">$${t.amount.toFixed(2)}</td>
+            <td>${t.description}</td>
+        `;
+        table.appendChild(row);
+    });
+}
+
+function clearInputs() {
+    document.getElementById('amount').value = '';
+    document.getElementById('description').value = '';
+}
+
+function saveData() {
+    localStorage.setItem('budgetData', JSON.stringify({ transactions, balance }));
+}
+
+// PWA Installation
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').then(() => {
+        console.log('Service Worker registered.');
+    });
+}
+</script>
+
+</body>
+</html>
