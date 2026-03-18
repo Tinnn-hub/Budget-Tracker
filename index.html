@@ -52,7 +52,6 @@
 let balance = 0;
 let transactions = [];
 
-// Load data from localStorage
 window.onload = () => {
     const savedData = JSON.parse(localStorage.getItem('budgetData'));
     if (savedData) {
@@ -111,7 +110,6 @@ function saveData() {
     localStorage.setItem('budgetData', JSON.stringify({ transactions, balance }));
 }
 
-// PWA Installation
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js').then(() => {
         console.log('Service Worker registered.');
